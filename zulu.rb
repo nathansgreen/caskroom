@@ -1,43 +1,45 @@
 cask 'zulu' do
-  version '1.8.0_66-8.11.0.1'
+  version '1.8.0_66,8.11.0.1'
   sha256 'e92cad336ad5085c4fadcaa86ac231341b264dd0b3e5b7b8ebddcd7ced929e73'
 
-  homepage "http://www.azul.com/downloads/zulu/zulu-mac/"
-  url "http://cdn.azulsystems.com/zulu/bin/zulu#{version}-macosx.dmg",
-      referer: "#{homepage}"
+  url "http://cdn.azulsystems.com/zulu/bin/zulu#{version.before_comma}-#{version.after_comma}-macosx.dmg",
+      referer: 'http://www.azul.com/downloads/zulu/zulu-mac/'
   name 'Azul Zulu Java Standard Edition Development Kit'
+  homepage 'http://www.azul.com/downloads/zulu/zulu-mac/'
   license :gratis
+
   conflicts_with cask: 'java'
-  pkg "Double-Click to Install Zulu #{version.split('.')[1]}.pkg"
+
+  pkg "Double-Click to Install Zulu #{version.minor}.pkg"
 
   postflight do
     system '/usr/bin/sudo', '-E', '--',
-           '/bin/mv', '-f', '--', "/Library/Java/JavaVirtualMachines/zulu-#{version.split('.')[1]}.jdk", "/Library/Java/JavaVirtualMachines/zulu#{version.split('-')[0]}.jdk"
+           '/bin/mv', '-f', '--', "/Library/Java/JavaVirtualMachines/zulu-#{version.minor}.jdk", "/Library/Java/JavaVirtualMachines/zulu#{version.before_comma}.jdk"
     system '/usr/bin/sudo', '-E', '--',
-           '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.split('-')[0]}.jdk", "/Library/Java/JavaVirtualMachines/zulu-#{version.split('.')[1]}.jdk"
+           '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.before_comma}.jdk", "/Library/Java/JavaVirtualMachines/zulu-#{version.minor}.jdk"
     system '/usr/bin/sudo', '-E', '--',
-           '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.split('-')[0]}.jdk/Contents/Home", '/Library/Java/Home'
+           '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.before_comma}.jdk/Contents/Home", '/Library/Java/Home'
     if MacOS.release <= :mavericks
       system '/usr/bin/sudo', '-E', '--',
              '/bin/rm', '-rf', '--', '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK'
       system '/usr/bin/sudo', '-E', '--',
-             '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.split('-')[0]}.jdk/Contents", '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK'
+             '/bin/ln', '-nsf', '--', "/Library/Java/JavaVirtualMachines/zulu#{version.before_comma}.jdk/Contents", '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK'
     end
   end
 
-  uninstall pkgutil:   [
-                         "com.azulsystems.zulu.#{version.split('.')[1]}"
-                       ],
-            delete:    [
-                         "/Library/Java/JavaVirtualMachines/zulu#{version.split('-')[0]}.jdk",
-                         "/Library/Java/JavaVirtualMachines/zulu-#{version.split('.')[1]}.jdk",
-                         '/Library/Java/Home',
-                         if MacOS.release <= :mavericks
-                           [
-                             '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK'
-                           ]
-                         end,
-                       ].keep_if { |v| !v.nil? }
+  uninstall pkgutil: [
+                       "com.azulsystems.zulu.#{version.minor}",
+                     ],
+            delete:  [
+                       "/Library/Java/JavaVirtualMachines/zulu#{version.before_comma}.jdk",
+                       "/Library/Java/JavaVirtualMachines/zulu-#{version.minor}.jdk",
+                       '/Library/Java/Home',
+                       if MacOS.release <= :mavericks
+                         [
+                           '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK',
+                         ]
+                       end,
+                     ].keep_if { |v| !v.nil? }
 
   caveats <<-EOS.undent
     If this cask is upgraded, previous stale versions will be left under
